@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projeto Órbita · Visita Domiciliar</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --azul:#402fdd;--azul-dk:#2e20b0;--azul-lt:#ede9ff;
+  --amarelo:#ed9e06;--amarelo-lt:#fff8e6;
+  --vermelho:#d42c4d;--verde:#1a7a4a;
+  --cinza1:#f5f5f7;--cinza2:#e8e8ec;--cinza3:#b0b0bc;--cinza4:#6b6b7a;
+  --texto:#1a1a2e;--branco:#ffffff;--radius:12px;
+  --shadow:0 4px 24px rgba(64,47,221,.10);
+}
+html,body{min-height:100vh;background:var(--cinza1);font-family:'Segoe UI',system-ui,sans-serif;color:var(--texto);font-size:16px;line-height:1.55}
+.topo{background:var(--azul);padding:18px 24px 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.topo-logo{width:42px;height:42px;background:var(--amarelo);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:var(--azul);flex-shrink:0}
+.topo-info h1{font-size:17px;font-weight:700;color:#fff;line-height:1.2}
+.topo-info p{font-size:12px;color:rgba(255,255,255,.70);margin-top:2px}
+.progresso-wrap{background:var(--branco);padding:14px 24px 12px;border-bottom:1px solid var(--cinza2);position:sticky;top:77px;z-index:90}
+.progresso-label{font-size:12px;color:var(--cinza4);margin-bottom:6px;display:flex;justify-content:space-between}
+.progresso-label span{font-weight:600;color:var(--azul)}
+.barra{height:6px;background:var(--cinza2);border-radius:99px;overflow:hidden}
+.barra-fill{height:100%;background:linear-gradient(90deg,var(--azul),var(--amarelo));border-radius:99px;transition:width .4s ease}
+.etapas-dots{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--cinza2);transition:background .3s}
+.dot.ativo{background:var(--azul)}.dot.feito{background:var(--verde)}
+main{max-width:680px;margin:0 auto;padding:28px 20px 120px}
+.step{display:none}.step.ativo{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.step-titulo{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.step-icone{width:44px;height:44px;border-radius:50%;background:var(--azul-lt);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.step-titulo h2{font-size:18px;font-weight:700;color:var(--azul);line-height:1.2}
+.step-titulo p{font-size:12px;color:var(--cinza4);margin-top:2px}
+.campo-card{background:var(--branco);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.campo-card.destaque{border-left:4px solid var(--amarelo)}
+.campo-card.alerta-risco{border-left:4px solid var(--vermelho);background:#fff8f9}
+label.campo-label{display:block;font-size:14px;font-weight:600;color:var(--texto);margin-bottom:8px;line-height:1.4}
+label.campo-label .obrig{color:var(--vermelho);margin-left:3px}
+.sublabel{font-size:12px;color:var(--cinza4);margin-top:-4px;margin-bottom:8px;font-style:italic}
+input[type="text"],input[type="email"],input[type="number"],select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--cinza2);border-radius:8px;font-size:15px;font-family:inherit;color:var(--texto);background:var(--cinza1);transition:border-color .2s,box-shadow .2s;outline:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(64,47,221,.12);background:var(--branco)}
+input[type="number"]{max-width:120px}
+textarea{resize:vertical;min-height:80px}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23402fdd' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.opcoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pill-label{display:flex;align-items:center;gap:7px;padding:9px 16px;border:1.5px solid var(--cinza2);border-radius:99px;cursor:pointer;font-size:14px;transition:all .2s;user-select:none;background:var(--cinza1);line-height:1.2}
+.pill-label input{display:none}
+.pill-label:hover{border-color:var(--azul);background:var(--azul-lt);color:var(--azul)}
+.pill-label.selecionado{background:var(--azul);border-color:var(--azul);color:#fff;font-weight:600}
+.pill-label.selecionado-check{background:var(--azul-lt);border-color:var(--azul);color:var(--azul);font-weight:600}
+.check-custom{width:18px;height:18px;border:2px solid currentColor;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pill-label.selecionado-check .check-custom::after{content:'✓';font-size:12px;color:var(--azul);font-weight:900}
+.escala-wrap{margin-top:6px}
+.escala-numeros{display:grid;grid-template-columns:repeat(11,1fr);gap:4px}
+.escala-btn{aspect-ratio:1;border:1.5px solid var(--cinza2);border-radius:8px;background:var(--cinza1);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--cinza4);display:flex;align-items:center;justify-content:center}
+.escala-btn:hover{border-color:var(--azul);color:var(--azul);background:var(--azul-lt)}
+.escala-btn.ativo{background:var(--azul);border-color:var(--azul);color:#fff}
+.escala-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--cinza4);margin-top:5px;padding:0 2px}
+.risco-grid{display:flex;flex-direction:column;gap:10px}
+.risco-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--cinza1);border-radius:10px;border:1.5px solid var(--cinza2)}
+.risco-item p{font-size:13.5px;line-height:1.35;flex:1}
+.risco-toggle{display:flex;gap:6px;flex-shrink:0}
+.risco-btn{padding:6px 14px;border-radius:99px;border:1.5px solid var(--cinza2);background:var(--branco);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--cinza4)}
+.risco-btn.ativo.sem-sinal{background:#e6f7ee;border-color:var(--verde);color:var(--verde)}
+.risco-btn.ativo.atencao{background:var(--amarelo-lt);border-color:var(--amarelo);color:#8a5a00}
+.risco-btn.ativo.confirmado{background:#ffeef2;border-color:var(--vermelho);color:var(--vermelho)}
+.grupo-escala{background:var(--branco);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.grupo-escala-header{background:var(--azul);padding:14px 20px}
+.grupo-escala-header h3{color:#fff;font-size:14px;font-weight:700;line-height:1.3}
+.grupo-escala-header .peso{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px}
+.grupo-escala-body{padding:16px 20px}
+.escala-questao{padding:14px 0;border-bottom:1px solid var(--cinza2)}
+.escala-questao:last-child{border-bottom:none}
+.escala-questao .q-texto{font-size:14px;font-weight:600;color:var(--texto);margin-bottom:10px;line-height:1.4}
+.nav-barra{position:fixed;bottom:0;left:0;right:0;background:var(--branco);border-top:1px solid var(--cinza2);padding:14px 24px;display:flex;gap:12px;z-index:200}
+.btn{flex:1;padding:14px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-anterior{background:var(--cinza1);color:var(--cinza4);border:1.5px solid var(--cinza2);flex:0 0 auto;width:52px;padding:14px 0}
+.btn-proximo{background:var(--azul);color:var(--branco)}
+.btn-proximo:hover{background:var(--azul-dk);transform:translateY(-1px);box-shadow:0 6px 20px rgba(64,47,221,.3)}
+.btn-enviar{background:var(--verde);color:var(--branco)}
+#tela-sucesso{display:none;text-align:center;padding:60px 20px}
+.sucesso-icone{width:80px;height:80px;background:#e6f7ee;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
+#tela-sucesso h2{font-size:22px;color:var(--verde);margin-bottom:10px}
+#tela-sucesso p{color:var(--cinza4);font-size:15px;max-width:380px;margin:0 auto 28px}
+.btn-novo{display:inline-block;padding:14px 32px;background:var(--azul);color:#fff;border-radius:10px;font-weight:700;font-size:15px;border:none;cursor:pointer;font-family:inherit}
+#overlay{display:none;position:fixed;inset:0;background:rgba(26,26,46,.55);z-index:999;align-items:center;justify-content:center}
+#overlay.vis{display:flex}
+.spinner-box{background:var(--branco);border-radius:16px;padding:32px 40px;text-align:center}
+.spinner{width:44px;height:44px;border:4px solid var(--cinza2);border-top-color:var(--azul);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.campo-outro{margin-top:10px;display:none}
+.campo-outro.vis{display:block}
+.divisor{height:1px;background:var(--cinza2);margin:16px 0}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--amarelo-lt);color:#7a4f00;letter-spacing:.3px;margin-left:6px}
+.dica{font-size:12px;color:var(--cinza4);background:var(--amarelo-lt);border-left:3px solid var(--amarelo);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:10px;line-height:1.4}
+/* LOGIN */
+#tela-login{text-align:center;padding:60px 20px;max-width:400px;margin:0 auto}
+#tela-login h2{font-size:22px;color:var(--azul);margin-bottom:12px}
+#tela-login p{color:var(--cinza4);margin-bottom:28px;font-size:15px}
+.btn-login{background:var(--azul);color:#fff;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:10px;margin:0 auto}
+@media(max-width:480px){.escala-numeros{gap:3px}.escala-btn{font-size:12px;border-radius:6px}.campo-card{padding:16px}main{padding:20px 14px 120px}}
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="tela-login">
+  <div style="font-size:48px;margin-bottom:16px">🔐</div>
+  <h2>Projeto Órbita</h2>
+  <p>Entre com sua conta <strong>@renapsi.org.br</strong> para acessar o formulário de visita domiciliar.</p>
+  <button class="btn-login" onclick="fazerLogin()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19h.5v3c4.86-2.34 8-7 8-11.5C20 5.81 16.19 2 11.5 2z"/></svg>
+    Entrar com Microsoft
+  </button>
+</div>
+
+<!-- APP PRINCIPAL (oculto até login) -->
+<div id="app-principal" style="display:none">
+
+<header class="topo">
+  <div class="topo-logo">Ó</div>
+  <div class="topo-info">
+    <h1>Projeto Órbita</h1>
+    <p>Formulário de Visita Domiciliar · RENAPSI</p>
+  </div>
+</header>
+
+<div class="progresso-wrap">
+  <div class="progresso-label">
+    <span id="prog-texto">Etapa 1 de 10</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="barra"><div class="barra-fill" id="barra-fill" style="width:0%"></div></div>
+  <div class="etapas-dots" id="dots"></div>
+</div>
+
+<div id="overlay"><div class="spinner-box"><div class="spinner"></div><p>Salvando as informações…</p></div></div>
+
+<main>
+
+<section class="step ativo" id="step-0">
+  <div class="step-titulo"><div class="step-icone">👤</div><div><h2>Identificação</h2><p>Informações básicas do jovem e do entrevistador</p></div></div>
+  <div class="campo-card destaque">
+    <label class="campo-label">Nome do entrevistador <span class="obrig">*</span></label>
+    <input type="text" id="nomeEntrevistador" placeholder="Seu nome completo">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">E-mail do entrevistador</label>
+    <input type="email" id="email" placeholder="seu@email.com">
+  </div>
+  <div class="campo-card destaque">
+    <label class="campo-label">Nome do jovem vinculado à RENAPSI <span class="obrig">*</span></label>
+    <input type="text" id="nomeJovem" placeholder="Nome completo do jovem">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Nome da família do jovem</label>
+    <input type="text" id="nomeFamilia" placeholder="Ex: Família Silva">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Nome do entrevistado</label>
+    <p class="sublabel">Quem respondeu esta visita</p>
+    <input type="text" id="nomeEntrevistado" placeholder="Nome de quem está sendo entrevistado">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Vínculo do entrevistado com o jovem <span class="obrig">*</span></label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="vinculo" value="O próprio jovem"> O próprio jovem</label>
+      <label class="pill-label"><input type="radio" name="vinculo" value="Mãe"> Mãe</label>
+      <label class="pill-label"><input type="radio" name="vinculo" value="Pai"> Pai</label>
+      <label class="pill-label"><input type="radio" name="vinculo" value="Responsável Legal"> Responsável Legal</label>
+      <label class="pill-label"><input type="radio" name="vinculo" value="Outro"> Outro</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Matrícula do jovem na RENAPSI</label>
+    <input type="text" id="matricula" placeholder="Número de matrícula">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem faz parte de qual Programa?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="programa" value="Jovem Aprendiz RENAPSI"> Jovem Aprendiz RENAPSI</label>
+      <label class="pill-label"><input type="radio" name="programa" value="Jovem Candango"> Jovem Candango</label>
+      <label class="pill-label"><input type="radio" name="programa" value="CIPLAN"> CIPLAN</label>
+      <label class="pill-label"><input type="radio" name="programa" value="Outro"> Outro</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">UF <span class="obrig">*</span></label>
+    <select id="uf">
+      <option value="">Selecione o estado</option>
+      <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option selected>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+    </select>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Município</label>
+    <input type="text" id="municipio" placeholder="Nome da cidade">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Endereço</label>
+    <input type="text" id="endereco" placeholder="Rua, número, bairro">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Nome da Escola</label>
+    <input type="text" id="escola" placeholder="Nome da escola do jovem">
+  </div>
+</section>
+
+<section class="step" id="step-1">
+  <div class="step-titulo"><div class="step-icone">🔍</div><div><h2>Sinais de Risco e Proteção</h2><p>Marque o nível de cada sinal observado</p></div></div>
+  <div class="campo-card alerta-risco">
+    <div class="dica">⚠️ Registre apenas o que foi observado ou relatado durante a visita.</div>
+    <div class="divisor"></div>
+    <div class="risco-grid">
+      <div class="risco-item" data-campo="sinalViolenciaDom"><p>Violência doméstica<br><small style="color:var(--cinza4)">física, psicológica ou sexual</small></p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+      <div class="risco-item" data-campo="sinalDesprotecao"><p>Desproteção<br><small style="color:var(--cinza4)">higiene, alimentação, cuidados básicos</small></p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+      <div class="risco-item" data-campo="sinalDesnutricao"><p>Desnutrição ou déficit alimentar aparente</p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+      <div class="risco-item" data-campo="sinalTrabalhoInfantil"><p>Trabalho infantil ou exploração do jovem</p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+      <div class="risco-item" data-campo="sinalSubstanciaJovem"><p>Uso de substância psicoativa<br><small style="color:var(--cinza4)">pelo próprio jovem</small></p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+      <div class="risco-item" data-campo="sinalSubstanciaFamiliar"><p>Uso de substância psicoativa<br><small style="color:var(--cinza4)">por familiar</small></p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+      <div class="risco-item" data-campo="sinalIdeacaoSuicida"><p>Ideação suicida, autolesão ou sofrimento psíquico grave</p><div class="risco-toggle"><button class="risco-btn sem-sinal ativo" data-val="Sem sinais">✓ Sem</button><button class="risco-btn atencao" data-val="Atenção!">⚠️</button><button class="risco-btn confirmado" data-val="Confirmado/Relatado">❗</button></div></div>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Outro sinal identificado <span class="badge">Opcional</span></label>
+    <textarea id="sinalOutro" placeholder="Descreva se houver outro sinal não listado acima…" rows="2"></textarea>
+  </div>
+</section>
+
+<section class="step" id="step-2">
+  <div class="step-titulo"><div class="step-icone">🏠</div><div><h2>Moradia e Condições de Vida</h2><p>Aproximadamente 5 minutos</p></div></div>
+  <div class="campo-card destaque">
+    <label class="campo-label">Quantas pessoas moram aqui? <span class="obrig">*</span></label>
+    <p class="sublabel">Incluindo o jovem</p>
+    <input type="number" id="numMoradores" min="1" max="30" placeholder="Ex: 4">
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Composição familiar <span class="badge">Marque todos que moram na casa</span></label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Mãe"><span class="check-custom"></span> Mãe</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Pai"><span class="check-custom"></span> Pai</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Padrasto/Madrasta"><span class="check-custom"></span> Padrasto/Madrasta</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Avó/Avô"><span class="check-custom"></span> Avó/Avô</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Irmão/Irmã"><span class="check-custom"></span> Irmão/Irmã</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Cônjuge/Companheiro(a)"><span class="check-custom"></span> Cônjuge/Companheiro(a)</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Filho(a)"><span class="check-custom"></span> Filho(a)</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Tio/Tia"><span class="check-custom"></span> Tio/Tia</label>
+      <label class="pill-label"><input type="checkbox" name="compFam" value="Outro"><span class="check-custom"></span> Outro</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem possui espaço adequado?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="checkbox" name="espaco" value="Quarto próprio"><span class="check-custom"></span> Quarto próprio</label>
+      <label class="pill-label"><input type="checkbox" name="espaco" value="Cama"><span class="check-custom"></span> Cama</label>
+      <label class="pill-label"><input type="checkbox" name="espaco" value="Mesa para estudar"><span class="check-custom"></span> Mesa para estudar</label>
+      <label class="pill-label"><input type="checkbox" name="espaco" value="Sem espaço adequado"><span class="check-custom"></span> Sem espaço adequado</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Avaliação geral do espaço</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="avalEspaco" value="Adequado"> Adequado</label>
+      <label class="pill-label"><input type="radio" name="avalEspaco" value="Parcialmente adequado"> Parcialmente adequado</label>
+      <label class="pill-label"><input type="radio" name="avalEspaco" value="Inadequado"> Inadequado</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Situação do imóvel</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="imovel" value="Próprio"> Próprio</label>
+      <label class="pill-label"><input type="radio" name="imovel" value="Alugado"> Alugado</label>
+      <label class="pill-label"><input type="radio" name="imovel" value="Cedido"> Cedido</label>
+      <label class="pill-label"><input type="radio" name="imovel" value="Ocupação irregular"> Ocupação irregular</label>
+      <label class="pill-label"><input type="radio" name="imovel" value="Outro"> Outro</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">O imóvel demanda intervenção emergencial?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="reformaEmerg" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="reformaEmerg" value="Não"> Não</label>
+    </div>
+    <div class="campo-outro" id="reforma-detalhe">
+      <label class="campo-label" style="margin-top:10px">Necessidades identificadas</label>
+      <div class="opcoes">
+        <label class="pill-label"><input type="checkbox" name="reforma" value="Reforma estrutural"><span class="check-custom"></span> Reforma estrutural</label>
+        <label class="pill-label"><input type="checkbox" name="reforma" value="Falta de móveis essenciais"><span class="check-custom"></span> Falta de móveis</label>
+        <label class="pill-label"><input type="checkbox" name="reforma" value="Sem acesso à água/luz"><span class="check-custom"></span> Sem água/luz</label>
+        <label class="pill-label"><input type="checkbox" name="reforma" value="Outro"><span class="check-custom"></span> Outro</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="step-3">
+  <div class="step-titulo"><div class="step-icone">❤️</div><div><h2>Saúde, Trabalho e Renda</h2><p>Aproximadamente 5 minutos</p></div></div>
+  <div class="campo-card">
+    <label class="campo-label">Algum membro realiza tratamento de saúde contínuo?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="temTratamento" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="temTratamento" value="Não"> Não</label>
+    </div>
+    <div class="campo-outro" id="trat-detalhe">
+      <label class="campo-label" style="margin-top:10px">Quem, qual condição e onde é acompanhado?</label>
+      <textarea id="tratamentoDetalhe" placeholder="Ex: Mãe — depressão — UBS do bairro" rows="2"></textarea>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Há pessoa com deficiência (PcD) na família?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="temPcd" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="temPcd" value="Não"> Não</label>
+    </div>
+    <div class="campo-outro" id="pcd-detalhe">
+      <div class="opcoes" style="margin-top:10px">
+        <label class="pill-label"><input type="checkbox" name="tipoPcd" value="Física"><span class="check-custom"></span> Física</label>
+        <label class="pill-label"><input type="checkbox" name="tipoPcd" value="Intelectual"><span class="check-custom"></span> Intelectual</label>
+        <label class="pill-label"><input type="checkbox" name="tipoPcd" value="Visual"><span class="check-custom"></span> Visual</label>
+        <label class="pill-label"><input type="checkbox" name="tipoPcd" value="Auditiva"><span class="check-custom"></span> Auditiva</label>
+        <label class="pill-label"><input type="checkbox" name="tipoPcd" value="TEA"><span class="check-custom"></span> TEA</label>
+        <label class="pill-label"><input type="checkbox" name="tipoPcd" value="Outra"><span class="check-custom"></span> Outra</label>
+      </div>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Última consulta médica</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="consultaMed" value="Menos de 6 meses"> &lt;6 meses</label>
+      <label class="pill-label"><input type="radio" name="consultaMed" value="6 meses a 1 ano"> 6m–1 ano</label>
+      <label class="pill-label"><input type="radio" name="consultaMed" value="Mais de 1 ano"> &gt;1 ano</label>
+      <label class="pill-label"><input type="radio" name="consultaMed" value="Nunca"> Nunca</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Última consulta odontológica</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="consultaDent" value="Menos de 6 meses"> &lt;6 meses</label>
+      <label class="pill-label"><input type="radio" name="consultaDent" value="6 meses a 1 ano"> 6m–1 ano</label>
+      <label class="pill-label"><input type="radio" name="consultaDent" value="Mais de 1 ano"> &gt;1 ano</label>
+      <label class="pill-label"><input type="radio" name="consultaDent" value="Nunca"> Nunca</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Há necessidade de atendimento urgente?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="urgenciaSaude" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="urgenciaSaude" value="Não"> Não</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Principais dificuldades da família <span class="badge">Marque todas</span></label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="checkbox" name="dific" value="Renda insuficiente"><span class="check-custom"></span> Renda insuficiente</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Desemprego"><span class="check-custom"></span> Desemprego</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Endividamento"><span class="check-custom"></span> Endividamento</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Problema de saúde na família"><span class="check-custom"></span> Saúde</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Uso de substâncias"><span class="check-custom"></span> Substâncias</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Conflito familiar"><span class="check-custom"></span> Conflito familiar</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Dificuldade de acesso a serviços"><span class="check-custom"></span> Acesso a serviços</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Questão habitacional"><span class="check-custom"></span> Habitacional</label>
+      <label class="pill-label"><input type="checkbox" name="dific" value="Outro"><span class="check-custom"></span> Outro</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Nº de pessoas da casa com renda</label>
+    <input type="number" id="pessoasRenda" min="0" max="20" placeholder="Ex: 2">
+    <div class="divisor"></div>
+    <label class="campo-label">Tipo(s) de vínculo(s) de trabalho</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="checkbox" name="vinculoTrab" value="CLT/Formal"><span class="check-custom"></span> CLT/Formal</label>
+      <label class="pill-label"><input type="checkbox" name="vinculoTrab" value="Aprendiz"><span class="check-custom"></span> Aprendiz</label>
+      <label class="pill-label"><input type="checkbox" name="vinculoTrab" value="Autônomo"><span class="check-custom"></span> Autônomo</label>
+      <label class="pill-label"><input type="checkbox" name="vinculoTrab" value="Informal"><span class="check-custom"></span> Informal</label>
+      <label class="pill-label"><input type="checkbox" name="vinculoTrab" value="Aposentado/Pensão"><span class="check-custom"></span> Aposentado/Pensão</label>
+      <label class="pill-label"><input type="checkbox" name="vinculoTrab" value="Desempregado"><span class="check-custom"></span> Desempregado</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Benefícios sociais recebidos</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="Bolsa Família"><span class="check-custom"></span> Bolsa Família</label>
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="BPC"><span class="check-custom"></span> BPC</label>
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="CadÚnico"><span class="check-custom"></span> CadÚnico</label>
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="Vale Gás"><span class="check-custom"></span> Vale Gás</label>
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="Prato Cheio"><span class="check-custom"></span> Prato Cheio</label>
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="DF Social"><span class="check-custom"></span> DF Social</label>
+      <label class="pill-label"><input type="checkbox" name="beneficios" value="Nenhum"><span class="check-custom"></span> Nenhum</label>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="step-4">
+  <div class="step-titulo"><div class="step-icone">📚</div><div><h2>Educação e Trajetória Escolar</h2><p>Aproximadamente 5 minutos</p></div></div>
+  <div class="campo-card">
+    <label class="campo-label">Nível de escolaridade atual</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="escolaridade" value="Fundamental I"> Fund. I</label>
+      <label class="pill-label"><input type="radio" name="escolaridade" value="Fundamental II"> Fund. II</label>
+      <label class="pill-label"><input type="radio" name="escolaridade" value="Ensino Médio"> Ensino Médio</label>
+      <label class="pill-label"><input type="radio" name="escolaridade" value="EJA/Aceleração"> EJA</label>
+      <label class="pill-label"><input type="radio" name="escolaridade" value="Ensino Superior"> Superior</label>
+      <label class="pill-label"><input type="radio" name="escolaridade" value="Concluiu EM"> Concluiu EM</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Ano/série atual</label>
+    <input type="text" id="serieAno" placeholder="Ex: 2º ano do Ensino Médio">
+    <div class="divisor"></div>
+    <label class="campo-label">Já mudou de escola?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="mudouEscola" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="mudouEscola" value="Sim"> Sim</label>
+    </div>
+    <div class="campo-outro" id="motivo-mudanca">
+      <div class="opcoes" style="margin-top:10px">
+        <label class="pill-label"><input type="radio" name="motivoMudanca" value="Mudança de endereço"> Mudança de endereço</label>
+        <label class="pill-label"><input type="radio" name="motivoMudanca" value="Conflito escolar"> Conflito escolar</label>
+        <label class="pill-label"><input type="radio" name="motivoMudanca" value="Evasão"> Evasão</label>
+        <label class="pill-label"><input type="radio" name="motivoMudanca" value="Transferência"> Transferência</label>
+        <label class="pill-label"><input type="radio" name="motivoMudanca" value="Outro"> Outro</label>
+      </div>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Já reprovou?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="reprovou" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="reprovou" value="Sim"> Sim</label>
+    </div>
+    <div class="campo-outro" id="reprov-vezes">
+      <input type="number" id="qtdReprovacoes" min="1" max="10" placeholder="Quantas vezes?" style="margin-top:10px">
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Relata histórico de bullying?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="bullying" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="bullying" value="Não"> Não</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Relação geral com a escola</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="relacaoEscola" value="Positiva"> Positiva</label>
+      <label class="pill-label"><input type="radio" name="relacaoEscola" value="Indiferente"> Indiferente</label>
+      <label class="pill-label"><input type="radio" name="relacaoEscola" value="Negativa"> Negativa</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Dificuldades em alguma disciplina?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="dificDisciplina" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="dificDisciplina" value="Sim"> Sim</label>
+    </div>
+    <div class="campo-outro" id="dific-disc-detalhe">
+      <input type="text" id="discDificeis" placeholder="Quais disciplinas?" style="margin-top:10px">
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Há diagnóstico de dificuldade de aprendizagem?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="diagnosticoAprendiz" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="diagnosticoAprendiz" value="Sim, com laudo"> Sim, com laudo</label>
+      <label class="pill-label"><input type="radio" name="diagnosticoAprendiz" value="Sim, sem laudo"> Sim, sem laudo</label>
+    </div>
+    <div class="campo-outro" id="diagn-tipo">
+      <div class="opcoes" style="margin-top:10px">
+        <label class="pill-label"><input type="checkbox" name="tipoDiagn" value="TDAH"><span class="check-custom"></span> TDAH</label>
+        <label class="pill-label"><input type="checkbox" name="tipoDiagn" value="Dislexia"><span class="check-custom"></span> Dislexia</label>
+        <label class="pill-label"><input type="checkbox" name="tipoDiagn" value="TEA"><span class="check-custom"></span> TEA</label>
+        <label class="pill-label"><input type="checkbox" name="tipoDiagn" value="TPAC"><span class="check-custom"></span> TPAC</label>
+        <label class="pill-label"><input type="checkbox" name="tipoDiagn" value="Outro"><span class="check-custom"></span> Outro</label>
+      </div>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Tem acompanhamento especializado?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="acompEspec" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="acompEspec" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="acompEspec" value="Em processo"> Em processo</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem faz o reforço escolar da Renapsi?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="reforcoRenapsi" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="reforcoRenapsi" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="reforcoRenapsi" value="Desconhecia a oferta"> Desconhecia</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Como avalia a contribuição da Renapsi?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="avalRenapsi" value="Muito positiva"> Muito positiva</label>
+      <label class="pill-label"><input type="radio" name="avalRenapsi" value="Positiva"> Positiva</label>
+      <label class="pill-label"><input type="radio" name="avalRenapsi" value="Neutra"> Neutra</label>
+      <label class="pill-label"><input type="radio" name="avalRenapsi" value="Negativa"> Negativa</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Observações <span class="badge">Opcional</span></label>
+    <textarea id="obsRenapsi" placeholder="Comentários livres…" rows="2"></textarea>
+  </div>
+</section>
+
+<section class="step" id="step-5">
+  <div class="step-titulo"><div class="step-icone">🤝</div><div><h2>Vínculos, Rede e Mobilidade</h2><p>Aproximadamente 5 minutos</p></div></div>
+  <div class="campo-card">
+    <label class="campo-label">Principal referência de apoio do jovem</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Mãe"> Mãe</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Pai"> Pai</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Avó/Avô"> Avó/Avô</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Irmão/Irmã"> Irmão/Irmã</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Tio/Tia"> Tio/Tia</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Amigo(a)"> Amigo(a)</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Parceiro(a)"> Parceiro(a)</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Padrinho/Madrinha"> Padrinho/Madrinha</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Líder religioso"> Líder religioso</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Ninguém identificado"> Ninguém</label>
+      <label class="pill-label"><input type="radio" name="pessoaRef" value="Outro"> Outro</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Relação com a família/rede de apoio</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="relacaoFamilia" value="Muito boa"> Muito boa</label>
+      <label class="pill-label"><input type="radio" name="relacaoFamilia" value="Boa"> Boa</label>
+      <label class="pill-label"><input type="radio" name="relacaoFamilia" value="Regular"> Regular</label>
+      <label class="pill-label"><input type="radio" name="relacaoFamilia" value="Distante"> Distante</label>
+      <label class="pill-label"><input type="radio" name="relacaoFamilia" value="Conflituosa"> Conflituosa</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Observação <span class="badge">Opcional</span></label>
+    <textarea id="obsRelacaoFamilia" placeholder="Contexto adicional…" rows="2"></textarea>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Meios de transporte <span class="badge">Marque todos</span></label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="checkbox" name="transporte" value="A pé"><span class="check-custom"></span> A pé</label>
+      <label class="pill-label"><input type="checkbox" name="transporte" value="Ônibus"><span class="check-custom"></span> Ônibus</label>
+      <label class="pill-label"><input type="checkbox" name="transporte" value="Metrô"><span class="check-custom"></span> Metrô</label>
+      <label class="pill-label"><input type="checkbox" name="transporte" value="Bicicleta"><span class="check-custom"></span> Bicicleta</label>
+      <label class="pill-label"><input type="checkbox" name="transporte" value="Carro da família"><span class="check-custom"></span> Carro da família</label>
+      <label class="pill-label"><input type="checkbox" name="transporte" value="Carro por app"><span class="check-custom"></span> Carro por app</label>
+      <label class="pill-label"><input type="checkbox" name="transporte" value="Outro"><span class="check-custom"></span> Outro</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Tempo médio de deslocamento</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="tempoTransp" value="Até 30 min"> Até 30 min</label>
+      <label class="pill-label"><input type="radio" name="tempoTransp" value="30 min a 1h"> 30min–1h</label>
+      <label class="pill-label"><input type="radio" name="tempoTransp" value="1h a 2h"> 1h–2h</label>
+      <label class="pill-label"><input type="radio" name="tempoTransp" value="Mais de 2h"> +2h</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Dificuldade significativa de deslocamento?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="dificTransp" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="dificTransp" value="Não"> Não</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Acessou CRAS ou posto de saúde nos últimos 12 meses?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="acessoCras" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="acessoCras" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="acessoCras" value="Tentou, mas não conseguiu"> Tentou, sem sucesso</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Dificuldade de acesso?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="dificCras" value="Não"> Não</label>
+      <label class="pill-label"><input type="radio" name="dificCras" value="Sim — distância"> Distância</label>
+      <label class="pill-label"><input type="radio" name="dificCras" value="Sim — demora/fila"> Demora/fila</label>
+      <label class="pill-label"><input type="radio" name="dificCras" value="Sim — cobrança indevida"> Cobrança indevida</label>
+      <label class="pill-label"><input type="radio" name="dificCras" value="Sim — outro motivo"> Outro</label>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="step-6">
+  <div class="step-titulo"><div class="step-icone">🌟</div><div><h2>Rotina e Projeto de Vida</h2><p>Aproximadamente 5 minutos</p></div></div>
+  <div class="campo-card">
+    <label class="campo-label">Responsabilidade doméstica assumida pelo jovem</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="respDomestica" value="Nenhuma"> Nenhuma</label>
+      <label class="pill-label"><input type="radio" name="respDomestica" value="Baixa (tarefas pontuais)"> Baixa</label>
+      <label class="pill-label"><input type="radio" name="respDomestica" value="Moderada (contribui regularmente)"> Moderada</label>
+      <label class="pill-label"><input type="radio" name="respDomestica" value="Alta (assume parte significativa)"> Alta</label>
+      <label class="pill-label"><input type="radio" name="respDomestica" value="Muito alta (é o principal responsável pela casa)"> Muito alta</label>
+    </div>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">A rotina é compatível com as obrigações do jovem?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="rotinaCOmpat" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="rotinaCOmpat" value="Parcialmente"> Parcialmente</label>
+      <label class="pill-label"><input type="radio" name="rotinaCOmpat" value="Não"> Não</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Como é um dia comum do jovem?</label>
+    <textarea id="rotinaDiaria" placeholder="Da hora que acorda até dormir…" rows="3"></textarea>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem identifica recursos de suporte emocional?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="suporteEmoc" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="suporteEmoc" value="Não"> Não</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">O que costuma ajudar quando as coisas ficam difíceis?</label>
+    <textarea id="suporteEmocDesc" placeholder="Fé, amigos, esporte, leitura…" rows="2"></textarea>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">Tem momentos regulares de lazer?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="temLazer" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="temLazer" value="Raramente"> Raramente</label>
+      <label class="pill-label"><input type="radio" name="temLazer" value="Não"> Não</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">O que gosta de fazer no tempo livre?</label>
+    <textarea id="lazerDesc" placeholder="Atividades de lazer…" rows="2"></textarea>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem expressa projeto de vida?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="projetoVida" value="Claro e elaborado"> Claro</label>
+      <label class="pill-label"><input type="radio" name="projetoVida" value="Vago ou incipiente"> Vago</label>
+      <label class="pill-label"><input type="radio" name="projetoVida" value="Ausente"> Ausente</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">O que mais deseja conquistar nos próximos anos?</label>
+    <textarea id="conquistar" placeholder="Sonhos, metas, planos…" rows="2"></textarea>
+    <div class="divisor"></div>
+    <label class="campo-label">A família demonstra expectativa positiva?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="expectFamilia" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="expectFamilia" value="Parcialmente"> Parcialmente</label>
+      <label class="pill-label"><input type="radio" name="expectFamilia" value="Não / Sobrecarga projetada"> Não/Sobrecarga</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">O que a família espera para o futuro do jovem?</label>
+    <textarea id="expectFamiliaDesc" placeholder="Expectativas relatadas…" rows="2"></textarea>
+  </div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem identifica suas próprias potencialidades?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="autoPercep" value="Sim"> Sim</label>
+      <label class="pill-label"><input type="radio" name="autoPercep" value="Com dificuldade"> Com dificuldade</label>
+      <label class="pill-label"><input type="radio" name="autoPercep" value="Não"> Não</label>
+    </div>
+    <div class="divisor"></div>
+    <label class="campo-label">Quais talentos ou características positivas reconhece em si?</label>
+    <textarea id="talentos" placeholder="Habilidades, qualidades…" rows="2"></textarea>
+    <div class="divisor"></div>
+    <label class="campo-label">Se pudesse aprender algo novo, o que seria?</label>
+    <textarea id="aprenderNovo" placeholder="Interesse declarado…" rows="2"></textarea>
+  </div>
+</section>
+
+<section class="step" id="step-7">
+  <div class="step-titulo"><div class="step-icone">📋</div><div><h2>Necessidades Jurídicas</h2><p>Documentação pessoal</p></div></div>
+  <div class="campo-card">
+    <label class="campo-label">O jovem e a família possuem todos os documentos pessoais?</label>
+    <div class="opcoes">
+      <label class="pill-label"><input type="radio" name="possuiDocs" value="Sim"> Sim, todos</label>
+      <label class="pill-label"><input type="radio" name="possuiDocs" value="Não"> Não, faltam alguns</label>
+    </div>
+    <div class="campo-outro" id="docs-faltantes">
+      <div class="opcoes" style="margin-top:12px">
+        <label class="pill-label"><input type="checkbox" name="docFalt" value="RG/CNH"><span class="check-custom"></span> RG/CNH</label>
+        <label class="pill-label"><input type="checkbox" name="docFalt" value="CPF"><span class="check-custom"></span> CPF</label>
+        <label class="pill-label"><input type="checkbox" name="docFalt" value="Certidão de nascimento"><span class="check-custom"></span> Certidão de nascimento</label>
+        <label class="pill-label"><input type="checkbox" name="docFalt" value="Título de eleitor"><span class="check-custom"></span> Título de eleitor</label>
+        <label class="pill-label"><input type="checkbox" name="docFalt" value="Carteira de trabalho"><span class="check-custom"></span> Carteira de trabalho</label>
+        <label class="pill-label"><input type="checkbox" name="docFalt" value="Outro"><span class="check-custom"></span> Outro</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="step-8">
+  <div class="step-titulo"><div class="step-icone">📊</div><div><h2>Avaliação — Parte 1</h2><p>Toque no número de 0 a 10</p></div></div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Vínculo familiar e rede de apoio</h3><p class="peso">Peso 20%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Nível de proximidade com a família</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BH"></div><div class="escala-labels"><span>Nenhuma</span><span>Máxima</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Quanto pode contar com a família nas dificuldades</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BI"></div><div class="escala-labels"><span>Nada</span><span>Totalmente</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Relacionamento entre as pessoas que moram com você</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BJ"></div><div class="escala-labels"><span>Muito ruim</span><span>Excelente</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Quanto se sente apoiado(a) nas decisões</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BK"></div><div class="escala-labels"><span>Nada</span><span>Totalmente</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Quanto é ouvido(a) e respeitado(a) na família</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BL"></div><div class="escala-labels"><span>Nada</span><span>Totalmente</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Quanto a família incentiva seu desenvolvimento</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BM"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Organização da rotina doméstica</h3><p class="peso">Peso 15%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Organização da rotina da casa</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BN"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Rotina permite conciliar estudo, trabalho e descanso</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BO"></div><div class="escala-labels"><span>Nada</span><span>Totalmente</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Cumprimento de compromissos nos prazos combinados</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BP"></div><div class="escala-labels"><span>Nunca</span><span>Sempre</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Ambiente da casa para estudar ou realizar atividades</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BQ"></div><div class="escala-labels"><span>Péssimo</span><span>Ótimo</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Segurança alimentar e financeira</h3><p class="peso">Peso 15%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Garantia de alimentação adequada todo o mês</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BR"></div><div class="escala-labels"><span>Não garante</span><span>Garante</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Estabilidade financeira da família</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BS"></div><div class="escala-labels"><span>Instável</span><span>Estável</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Segurança em relação à situação financeira</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BT"></div><div class="escala-labels"><span>Nada</span><span>Muita</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="step-9">
+  <div class="step-titulo"><div class="step-icone">🎯</div><div><h2>Avaliação — Parte 2</h2><p>Continue tocando nos números de 0 a 10</p></div></div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Saúde emocional</h3><p class="peso">Peso 15%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Saúde emocional atualmente</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BU"></div><div class="escala-labels"><span>Muito ruim</span><span>Excelente</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Lidar com situações de estresse ou pressão</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BV"></div><div class="escala-labels"><span>Nada</span><span>Muito bem</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Motivação para alcançar objetivos</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BW"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Tem com quem conversar quando precisa de apoio</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BX"></div><div class="escala-labels"><span>Ninguém</span><span>Sempre tem</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Autonomia e perspectiva de futuro</h3><p class="peso">Peso 15%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Clareza do que deseja para o futuro profissional</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BY"></div><div class="escala-labels"><span>Nenhuma</span><span>Total</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Preparação para tomar decisões importantes</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_BZ"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Crença no próprio potencial</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CA"></div><div class="escala-labels"><span>Pouco</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Busca por oportunidades de crescimento</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CB"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Engajamento da família com a Renapsi</h3><p class="peso">Peso 10%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Família demonstra interesse pelo desenvolvimento na Renapsi</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CC"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Família participa ou acompanha informações da Renapsi</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CD"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header"><h3>Resiliência e superação</h3><p class="peso">Peso 10%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Encontrar forças para seguir em frente nas dificuldades</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CE"></div><div class="escala-labels"><span>Pouco</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Superar desafios e aprender com eles</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CF"></div><div class="escala-labels"><span>Pouco</span><span>Muito</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header" style="background:#5a3abf"><h3>Interesse declarado por área profissional</h3><p class="peso">Peso 25%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Economia Criativa — design, audiovisual, moda, música, games</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CG"></div><div class="escala-labels"><span>Nenhum</span><span>Muito alto</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Economia do Cuidado — educação, saúde, apoio a pessoas</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CH"></div><div class="escala-labels"><span>Nenhum</span><span>Muito alto</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Economia Digital — tecnologia, programação, IA, marketing</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CI"></div><div class="escala-labels"><span>Nenhum</span><span>Muito alto</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Economia Verde — sustentabilidade, reciclagem, meio ambiente</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CJ"></div><div class="escala-labels"><span>Nenhum</span><span>Muito alto</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Interesse em participar de cursos e projetos nessas áreas</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CK"></div><div class="escala-labels"><span>Nada</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Considera construir carreira em alguma dessas áreas</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CL"></div><div class="escala-labels"><span>Não considera</span><span>Com certeza</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header" style="background:#3a6abf"><h3>Exposição prévia</h3><p class="peso">Peso 20%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Contato prévio com Economia Criativa</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CM"></div><div class="escala-labels"><span>Nenhum</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Contato com atividades de cuidado e apoio</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CN"></div><div class="escala-labels"><span>Nenhum</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Contato com ferramentas digitais e tecnologia</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CO"></div><div class="escala-labels"><span>Nenhum</span><span>Muito</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Contato com sustentabilidade e meio ambiente</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CP"></div><div class="escala-labels"><span>Nenhum</span><span>Muito</span></div></div></div>
+    </div>
+  </div>
+  <div class="grupo-escala">
+    <div class="grupo-escala-header" style="background:#1a7a4a"><h3>Competências desenvolvidas</h3><p class="peso">Peso 20%</p></div>
+    <div class="grupo-escala-body">
+      <div class="escala-questao"><p class="q-texto">Habilidades criativas — Economia Criativa</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CQ"></div><div class="escala-labels"><span>Nenhuma</span><span>Alta</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Empatia e acolhimento — Economia do Cuidado</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CR"></div><div class="escala-labels"><span>Nenhuma</span><span>Alta</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Habilidades digitais — Economia Digital</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CS"></div><div class="escala-labels"><span>Nenhuma</span><span>Alta</span></div></div></div>
+      <div class="escala-questao"><p class="q-texto">Conhecimento ambiental — Economia Verde</p><div class="escala-wrap"><div class="escala-numeros" data-campo="esc_CT"></div><div class="escala-labels"><span>Nenhum</span><span>Alto</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<div id="tela-sucesso">
+  <div class="sucesso-icone">✓</div>
+  <h2>Visita registrada!</h2>
+  <p>As informações foram salvas com sucesso na planilha do Projeto Órbita.</p>
+  <button class="btn-novo" onclick="reiniciar()">Registrar nova visita</button>
+</div>
+
+</main>
+
+<div class="nav-barra" id="nav-barra">
+  <button class="btn btn-anterior" id="btn-ant" onclick="navegarStep(-1)" title="Voltar">←</button>
+  <button class="btn btn-proximo" id="btn-prox" onclick="navegarStep(1)">Próximo →</button>
+  <button class="btn btn-enviar" id="btn-env" style="display:none" onclick="enviarFormulario()">✓ Enviar visita</button>
+</div>
+
+</div><!-- fim app-principal -->
+
+<!-- MSAL para login Microsoft -->
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.10.0/lib/msal-browser.min.js"></script>
+<script>
+// ── CONFIGURAÇÃO MICROSOFT (preencher após registrar o app no Azure) ──
+var MSAL_CONFIG = {
+  auth: {
+    clientId: 'SEU_CLIENT_ID_AQUI',        // substituir após registrar app no Azure AD
+    authority: 'https://login.microsoftonline.com/SEU_TENANT_ID_AQUI',
+    redirectUri: window.location.origin
+  }
+};
+var GRAPH_SCOPES = ['User.Read','Files.ReadWrite'];
+var WORKBOOK_PATH = '/me/drive/root:/projeto-orbita/PROJETO_ÓRBITA_(Revisado).xlsx';
+var TABLE_NAME    = 'OfficeForms_Table';
+
+var msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+var accessToken  = null;
+
+async function fazerLogin() {
+  try {
+    var resp = await msalInstance.loginPopup({scopes: GRAPH_SCOPES});
+    msalInstance.setActiveAccount(resp.account);
+    var tokenResp = await msalInstance.acquireTokenSilent({scopes: GRAPH_SCOPES, account: resp.account});
+    accessToken = tokenResp.accessToken;
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('app-principal').style.display = 'block';
+  } catch(e) {
+    alert('Erro no login: ' + e.message);
+  }
+}
+
+// ── ESTADO ────────────────────────────────────────────────
+var stepAtual = 0;
+var totalSteps = 10;
+var horaInicio = new Date().toISOString();
+var escalaValores = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+  construirDots();
+  construirEscalas();
+  vincularPills();
+  vincularRiscos();
+  vincularCondicionais();
+  atualizarNav();
+});
+
+function construirDots() {
+  var cont = document.getElementById('dots');
+  for(var i=0;i<totalSteps;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i===0?' ativo':'');
+    cont.appendChild(d);
+  }
+}
+
+function atualizarDots() {
+  document.querySelectorAll('.dot').forEach(function(d,i){
+    d.className='dot';
+    if(i<stepAtual) d.classList.add('feito');
+    else if(i===stepAtual) d.classList.add('ativo');
+  });
+}
+
+function construirEscalas() {
+  document.querySelectorAll('.escala-numeros').forEach(function(wrap){
+    var campo=wrap.dataset.campo;
+    for(var n=0;n<=10;n++){
+      var btn=document.createElement('button');
+      btn.type='button';btn.className='escala-btn';
+      btn.textContent=n;btn.dataset.val=n;btn.dataset.campo=campo;
+      btn.addEventListener('click',function(){
+        var c=this.dataset.campo;
+        escalaValores[c]=parseInt(this.dataset.val);
+        document.querySelectorAll('.escala-btn[data-campo="'+c+'"]').forEach(function(b){b.classList.remove('ativo')});
+        this.classList.add('ativo');
+      });
+      wrap.appendChild(btn);
+    }
+  });
+}
+
+function vincularPills() {
+  document.querySelectorAll('.pill-label').forEach(function(lbl){
+    var inp=lbl.querySelector('input');
+    if(!inp) return;
+    inp.addEventListener('change',function(){
+      if(inp.type==='radio'){
+        document.querySelectorAll('input[name="'+inp.name+'"]').forEach(function(r){r.closest('.pill-label').classList.remove('selecionado')});
+        lbl.classList.add('selecionado');
+      } else {
+        lbl.classList.toggle('selecionado-check',inp.checked);
+      }
+    });
+  });
+}
+
+function vincularRiscos() {
+  document.querySelectorAll('.risco-item').forEach(function(item){
+    item.querySelectorAll('.risco-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        item.querySelectorAll('.risco-btn').forEach(function(b){b.classList.remove('ativo')});
+        btn.classList.add('ativo');
+      });
+    });
+  });
+}
+
+function vincularCondicionais() {
+  var mapa={'reformaEmerg':['Sim','reforma-detalhe'],'temTratamento':['Sim','trat-detalhe'],'temPcd':['Sim','pcd-detalhe'],'mudouEscola':['Sim','motivo-mudanca'],'reprovou':['Sim','reprov-vezes'],'dificDisciplina':['Sim','dific-disc-detalhe'],'possuiDocs':['Não','docs-faltantes']};
+  Object.keys(mapa).forEach(function(name){
+    document.querySelectorAll('input[name="'+name+'"]').forEach(function(r){
+      r.addEventListener('change',function(){
+        var el=document.getElementById(mapa[name][1]);
+        if(el) el.classList.toggle('vis',r.value===mapa[name][0]&&r.checked);
+      });
+    });
+  });
+  document.querySelectorAll('input[name="diagnosticoAprendiz"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      var el=document.getElementById('diagn-tipo');
+      if(el) el.classList.toggle('vis',r.value!=='Não'&&r.checked);
+    });
+  });
+}
+
+function navegarStep(dir) {
+  var steps=document.querySelectorAll('.step');
+  steps[stepAtual].classList.remove('ativo');
+  stepAtual=Math.max(0,Math.min(totalSteps-1,stepAtual+dir));
+  steps[stepAtual].classList.add('ativo');
+  atualizarNav();atualizarDots();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function atualizarNav() {
+  var pct=Math.round((stepAtual/(totalSteps-1))*100);
+  document.getElementById('barra-fill').style.width=pct+'%';
+  document.getElementById('prog-texto').textContent='Etapa '+(stepAtual+1)+' de '+totalSteps;
+  document.getElementById('prog-pct').textContent=pct+'%';
+  var isUltimo=stepAtual===totalSteps-1;
+  document.getElementById('btn-ant').style.visibility=stepAtual===0?'hidden':'visible';
+  document.getElementById('btn-prox').style.display=isUltimo?'none':'flex';
+  document.getElementById('btn-env').style.display=isUltimo?'flex':'none';
+}
+
+function getRadio(n){var e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:''}
+function getChecks(n){return Array.from(document.querySelectorAll('input[name="'+n+'"]:checked')).map(function(e){return e.value}).join('; ')}
+function getRisco(c){var i=document.querySelector('.risco-item[data-campo="'+c+'"]');if(!i)return'Sem sinais';var b=i.querySelector('.risco-btn.ativo');return b?b.dataset.val:'Sem sinais'}
+function val(id){return(document.getElementById(id)||{}).value||''}
+function esc(k){return escalaValores[k]!==undefined?escalaValores[k]:''}
+
+async function enviarFormulario() {
+  if(!val('nomeJovem')){alert('Preencha o nome do jovem antes de enviar.');return}
+  document.getElementById('overlay').classList.add('vis');
+  try {
+    // Monta linha como array na ordem das colunas A-CV
+    var linha=[
+      null, // Id (autogerado)
+      horaInicio, new Date().toISOString(),
+      val('email'), val('nomeEntrevistador'), val('nomeFamilia'),
+      val('nomeEntrevistado'), val('nomeJovem'), val('matricula'),
+      val('uf'), val('municipio'), getRadio('vinculo'), getRadio('programa'),
+      val('endereco'), val('escola'),
+      getRisco('sinalViolenciaDom'), getRisco('sinalDesprotecao'),
+      getRisco('sinalDesnutricao'), getRisco('sinalTrabalhoInfantil'),
+      getRisco('sinalSubstanciaJovem'), getRisco('sinalSubstanciaFamiliar'),
+      getRisco('sinalIdeacaoSuicida'), val('sinalOutro'),
+      '', val('numMoradores'), getChecks('compFam'),
+      getChecks('espaco')+'|'+getRadio('avalEspaco'),
+      getRadio('imovel')+'|'+getRadio('reformaEmerg')+'|'+getChecks('reforma'),
+      '', 'Trat:'+getRadio('temTratamento')+'|PcD:'+getRadio('temPcd')+'|'+getChecks('tipoPcd'),
+      getRadio('consultaMed')+'|'+getRadio('consultaDent')+'|Urg:'+getRadio('urgenciaSaude'),
+      '', getChecks('dific'),
+      val('pessoasRenda')+'|'+getChecks('vinculoTrab')+'|'+getChecks('beneficios'),
+      '', getRadio('escolaridade')+'|'+val('serieAno')+'|mudou:'+getRadio('mudouEscola'),
+      'reprovou:'+getRadio('reprovou')+'|bullying:'+getRadio('bullying')+'|'+getRadio('relacaoEscola'),
+      getRadio('dificDisciplina')+'|'+getChecks('tipoDiagn')+'|'+getRadio('acompEspec'),
+      'reforço:'+getRadio('reforcoRenapsi')+'|'+getRadio('avalRenapsi'),
+      '', getRadio('pessoaRef'),
+      getRadio('relacaoFamilia')+'|'+val('obsRelacaoFamilia'),
+      '', getChecks('transporte')+'|'+getRadio('tempoTransp'),
+      getRadio('acessoCras')+'|'+getRadio('dificCras'),
+      '', getRadio('respDomestica')+'|'+getRadio('rotinaCOmpat'),
+      val('rotinaDiaria'), val('suporteEmocDesc'), val('lazerDesc'),
+      '', getRadio('projetoVida')+'|'+val('conquistar'),
+      getRadio('expectFamilia')+'|'+val('expectFamiliaDesc'),
+      getRadio('autoPercep')+'|'+val('talentos'), val('aprenderNovo'),
+      '', getRadio('possuiDocs'), getChecks('docFalt'), '',
+      esc('esc_BH'),esc('esc_BI'),esc('esc_BJ'),esc('esc_BK'),esc('esc_BL'),esc('esc_BM'),
+      esc('esc_BN'),esc('esc_BO'),esc('esc_BP'),esc('esc_BQ'),
+      esc('esc_BR'),esc('esc_BS'),esc('esc_BT'),
+      esc('esc_BU'),esc('esc_BV'),esc('esc_BW'),esc('esc_BX'),
+      esc('esc_BY'),esc('esc_BZ'),esc('esc_CA'),esc('esc_CB'),
+      esc('esc_CC'),esc('esc_CD'),esc('esc_CE'),esc('esc_CF'),
+      esc('esc_CG'),esc('esc_CH'),esc('esc_CI'),esc('esc_CJ'),esc('esc_CK'),esc('esc_CL'),
+      esc('esc_CM'),esc('esc_CN'),esc('esc_CO'),esc('esc_CP'),
+      esc('esc_CQ'),esc('esc_CR'),esc('esc_CS'),esc('esc_CT'),
+      '',''
+    ];
+
+    var resp = await fetch(
+      'https://graph.microsoft.com/v1.0'+WORKBOOK_PATH+':/workbook/tables/'+TABLE_NAME+'/rows',
+      {
+        method:'POST',
+        headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+        body:JSON.stringify({values:[linha]})
+      }
+    );
+
+    document.getElementById('overlay').classList.remove('vis');
+    if(resp.ok){
+      document.querySelectorAll('.step').forEach(function(s){s.classList.remove('ativo')});
+      document.getElementById('nav-barra').style.display='none';
+      document.querySelector('.progresso-wrap').style.display='none';
+      document.getElementById('tela-sucesso').style.display='block';
+    } else {
+      var err=await resp.json();
+      alert('Erro ao salvar: '+(err.error&&err.error.message||resp.status));
+    }
+  } catch(e) {
+    document.getElementById('overlay').classList.remove('vis');
+    alert('Falha na conexão: '+e.message);
+  }
+}
+
+function reiniciar(){location.reload()}
+</script>
+</body>
+</html> 
